@@ -1,0 +1,3 @@
+[submodule "yoloe"]
+	path = yoloe
+	url = https://github.com/hanyu462/yoloe.git
