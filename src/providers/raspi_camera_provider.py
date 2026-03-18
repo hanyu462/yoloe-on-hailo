@@ -38,7 +38,6 @@ class RaspiCameraProvider:
         self.height = int(height)
         self.fps = int(fps)
 
-        self.running = False
         self._thread: Optional[threading.Thread] = None
         self._lock = threading.Lock()
 
@@ -54,7 +53,6 @@ class RaspiCameraProvider:
             return
 
         self._start_picamera()
-        self.running = True
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
@@ -72,7 +70,6 @@ class RaspiCameraProvider:
         logging.info("RaspiCameraProvider started")
 
     def stop(self) -> None:
-        self.running = False
         self._stop_event.set()
 
         if self._thread and self._thread.is_alive():
