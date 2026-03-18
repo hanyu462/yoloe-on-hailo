@@ -74,7 +74,22 @@ class RaspiCameraProvider:
             self._thread.join(timeout=2.0)
         self._thread = None
 
-        self._cleanup_picamera()
+        camera = self._camera
+        self._camera = None
+        self._frame_cnt = 0
+        self._last_frame_time = None
+
+        if camera is not None:
+            try:
+                camera.stop()
+            except Exception as exc:
+                logging.warning("RaspiCameraProvider stop error: %s", exc)
+
+            try:
+                camera.close()
+            except Exception as exc:
+                logging.warning("RaspiCameraProvider close error: %s", exc)
+
         with self._lock:
             self._data = None
         logging.info("RaspiCameraProvider stopped")
@@ -103,25 +118,6 @@ class RaspiCameraProvider:
 
         self._frame_cnt = 0
         self._last_frame_time = None
-
-    def _cleanup_picamera(self) -> None:
-        camera = self._camera
-        self._camera = None
-        self._frame_cnt = 0
-        self._last_frame_time = None
-
-        if camera is None:
-            return
-
-        try:
-            camera.stop()
-        except Exception as exc:
-            logging.warning("RaspiCameraProvider stop error: %s", exc)
-
-        try:
-            camera.close()
-        except Exception as exc:
-            logging.warning("RaspiCameraProvider close error: %s", exc)
 
     def _read_frame(self) -> dict[str, Any]:
         if self._camera is None:
