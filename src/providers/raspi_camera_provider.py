@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 import threading
 import time
@@ -91,7 +89,7 @@ class RaspiCameraProvider:
 
         self._camera = Picamera2(camera_num=self.camera_index)
 
-        config = self._camera.create_video_configuration( # 이 부분은 공식적으로 이렇게 하라고 나온건가??
+        config = self._camera.create_video_configuration(
             main={"size": (self.width, self.height), "format": "RGB888"},
             controls={"FrameRate": self.fps},
             buffer_count=4,

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 RaspiCameraProvider - Hardware test script.
 
@@ -16,7 +14,6 @@ Controls (visualization window):
   q / ESC  - quit
 """
 
-import logging
 import sys
 import time
 import cv2
@@ -28,9 +25,6 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from src.providers.raspi_camera_provider import RaspiCameraProvider
-
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
 def _draw_overlay(cv2, frame: dict):
     bgr = frame["bgr"].copy()
