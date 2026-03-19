@@ -118,9 +118,6 @@ class RaspiCameraProvider:
         self._camera.configure(config)
         self._camera.start()
 
-        for _ in range(5):
-            self._camera.capture_array("main")
-
         self._frame_cnt = 0
 
     def _read_frame(self) -> CameraFrame:
