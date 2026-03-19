@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import logging
 import threading
 import time
@@ -6,22 +7,23 @@ from picamera2 import Picamera2
 from typing import Any, Optional
 
 
+@dataclass(slots=True)
+class CameraFrame:
+    t_monotonic: float
+    bgr: Any
+    camera_fps: float
+    frame_cnt: int
+    width: int
+    height: int
+
+
 class RaspiCameraProvider:
     """
     Raspberry Pi Camera Module provider.
 
     - Picamera2를 사용해 background thread에서 최신 프레임을 계속 읽는다.
-    - `get_data()`는 가장 최근 프레임 정보를 dict로 반환한다.
-    - dict 구조:
-      {
-          "t_monotonic": float,
-          "bgr": np.ndarray,
-          "camera_fps": float,
-          "frame_cnt": int,
-          "width": int,
-          "height": int,
-      }
-      -> dataframe 안쓰고 구현해보기
+    - `get_data()`는 가장 최근 프레임 정보를 `CameraFrame`으로 반환한다.
+    - Picamera2 `RGB888` main stream은 OpenCV용 `[B, G, R]` 배열로 capture 된다.
     """
 
     def __init__(
@@ -40,7 +42,7 @@ class RaspiCameraProvider:
         self._lock = threading.Lock()
 
         self._camera: Any = None
-        self._data: Optional[dict[str, Any]] = None
+        self._data: Optional[CameraFrame] = None
         self._frame_cnt = 0
         self._last_frame_time: Optional[float] = None
         self._stop_event = threading.Event()
@@ -94,7 +96,7 @@ class RaspiCameraProvider:
             self._data = None
         logging.info("RaspiCameraProvider stopped")
 
-    def get_data(self) -> Optional[dict[str, Any]]:
+    def get_data(self) -> Optional[CameraFrame]:
         with self._lock:
             return self._data
 
@@ -119,17 +121,12 @@ class RaspiCameraProvider:
         self._frame_cnt = 0
         self._last_frame_time = None
 
-    def _read_frame(self) -> dict[str, Any]:
+    def _read_frame(self) -> CameraFrame:
         if self._camera is None:
             raise RuntimeError("Camera not started. Call start() first")
 
-        rgb = self._camera.capture_array("main")
+        bgr = self._camera.capture_array("main")
         timestamp = time.monotonic()
-
-        if getattr(rgb, "ndim", 0) != 3 or rgb.shape[2] < 3:
-            raise RuntimeError(f"Unexpected frame shape from camera: {getattr(rgb, 'shape', None)}")
-
-        bgr = rgb[:, :, :3][:, :, ::-1].copy()
 
         if self._last_frame_time is None:
             camera_fps = float(self.fps)
@@ -140,14 +137,14 @@ class RaspiCameraProvider:
         self._last_frame_time = timestamp
         self._frame_cnt += 1
 
-        return {
-            "t_monotonic": timestamp,
-            "bgr": bgr,
-            "camera_fps": camera_fps,
-            "frame_cnt": self._frame_cnt,
-            "width": int(bgr.shape[1]),
-            "height": int(bgr.shape[0]),
-        }
+        return CameraFrame(
+            t_monotonic=timestamp,
+            bgr=bgr,
+            camera_fps=camera_fps,
+            frame_cnt=self._frame_cnt,
+            width=int(bgr.shape[1]),
+            height=int(bgr.shape[0]),
+        )
 
     def _run(self) -> None:
         while not self._stop_event.is_set():

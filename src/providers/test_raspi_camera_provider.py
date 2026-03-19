@@ -24,20 +24,20 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from src.providers.raspi_camera_provider import RaspiCameraProvider
+from src.providers.raspi_camera_provider import CameraFrame, RaspiCameraProvider
 
-def _draw_overlay(cv2, frame: dict):
-    bgr = frame["bgr"].copy()
+def _draw_overlay(cv2, frame: CameraFrame):
+    bgr = frame.bgr
     h, w = bgr.shape[:2]
 
     def put(text: str, y: int, color=(0, 255, 0)) -> None:
         cv2.putText(bgr, text, (8, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 3, cv2.LINE_AA)
         cv2.putText(bgr, text, (8, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 1, cv2.LINE_AA)
 
-    put(f"FPS: {float(frame['camera_fps']):.1f}", 24)
-    put(f"Frame: {int(frame['frame_cnt'])}", 48)
+    put(f"FPS: {float(frame.camera_fps):.1f}", 24)
+    put(f"Frame: {int(frame.frame_cnt)}", 48)
     put(f"Size: {w}x{h}", 72)
-    put(f"Timestamp: {float(frame['t_monotonic']):.3f}", 96, color=(255, 200, 0))
+    put(f"Timestamp: {float(frame.t_monotonic):.3f}", 96, color=(255, 200, 0))
     return bgr
 
 
@@ -71,12 +71,12 @@ def main() -> int:
         provider.stop()
         return 1
 
-    bgr = first_frame["bgr"]
+    bgr = first_frame.bgr
     print(f"  bgr shape={tuple(bgr.shape)}  dtype={bgr.dtype}")
-    print(f"  camera_fps={float(first_frame['camera_fps']):.2f}")
-    print(f"  frame_cnt={int(first_frame['frame_cnt'])}")
-    print(f"  width={int(first_frame['width'])}  height={int(first_frame['height'])}")
-    print(f"  timestamp={float(first_frame['t_monotonic']):.6f}")
+    print(f"  camera_fps={float(first_frame.camera_fps):.2f}")
+    print(f"  frame_cnt={int(first_frame.frame_cnt)}")
+    print(f"  width={int(first_frame.width)}  height={int(first_frame.height)}")
+    print(f"  timestamp={float(first_frame.t_monotonic):.6f}")
     print("  OK")
 
     # -------------------------------------------------------------------------
