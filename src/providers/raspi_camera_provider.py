@@ -131,7 +131,7 @@ class RaspiCameraProvider:
         finally:
             request.release()
         timestamp = time.monotonic()
-        camera_fps = 1_000_000.0 / float(metadata["FrameDuration"])
+        camera_fps = 1_000_000.0 / metadata["FrameDuration"]
         self._frame_cnt += 1
 
         return CameraFrame(
