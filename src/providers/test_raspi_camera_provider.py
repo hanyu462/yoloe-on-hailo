@@ -2,7 +2,7 @@
 RaspiCameraProvider - Hardware test script.
 
 Tested APIs:
-  start, stop, get_data
+  start, stop, is_running, get_data
 
 Prerequisites:
   Raspberry Pi Camera Module connected and Picamera2 installed
@@ -59,6 +59,7 @@ def main() -> int:
     except RuntimeError as exc:
         print(f"  FAIL: {exc}")
         return 1
+    print(f"  provider.is_running: {provider.is_running}")
     print("  start()\n  OK")
 
     # -------------------------------------------------------------------------
@@ -109,6 +110,7 @@ def main() -> int:
     # -------------------------------------------------------------------------
     print(f"\n{'=' * 60}\n  Phase 4: Teardown\n{'=' * 60}")
     provider.stop()
+    print(f"  provider.is_running: {provider.is_running}")
     print("  stop()\n  OK")
 
     print("\n  All phases complete. Done.")
