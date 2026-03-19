@@ -24,6 +24,7 @@ class RaspiCameraProvider:
     - Picamera2를 사용해 background thread에서 최신 프레임을 계속 읽는다.
     - `get_data()`는 가장 최근 프레임 정보를 `CameraFrame`으로 반환한다.
     - Picamera2 `RGB888` main stream은 OpenCV용 `[B, G, R]` 배열로 capture 된다.
+    - `camera_fps`는 capture request metadata의 `FrameDuration`으로 계산한다.
     """
 
     def __init__(
@@ -44,7 +45,6 @@ class RaspiCameraProvider:
         self._camera: Any = None
         self._data: Optional[CameraFrame] = None
         self._frame_cnt = 0
-        self._last_frame_time: Optional[float] = None
         self._stop_event = threading.Event()
 
     def start(self) -> None:
@@ -79,7 +79,6 @@ class RaspiCameraProvider:
         camera = self._camera
         self._camera = None
         self._frame_cnt = 0
-        self._last_frame_time = None
 
         if camera is not None:
             try:
@@ -123,22 +122,19 @@ class RaspiCameraProvider:
             self._camera.capture_array("main")
 
         self._frame_cnt = 0
-        self._last_frame_time = None
 
     def _read_frame(self) -> CameraFrame:
         if self._camera is None:
             raise RuntimeError("Camera not started. Call start() first")
 
-        bgr = self._camera.capture_array("main")
+        request = self._camera.capture_request()
+        try:
+            bgr = request.make_array("main")
+            metadata = request.get_metadata()
+        finally:
+            request.release()
         timestamp = time.monotonic()
-
-        if self._last_frame_time is None:
-            camera_fps = float(self.fps)
-        else:
-            dt = timestamp - self._last_frame_time
-            camera_fps = 0.0 if dt <= 0 else 1.0 / dt
-
-        self._last_frame_time = timestamp
+        camera_fps = 1_000_000.0 / float(metadata["FrameDuration"])
         self._frame_cnt += 1
 
         return CameraFrame(

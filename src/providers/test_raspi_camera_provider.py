@@ -34,7 +34,7 @@ def _draw_overlay(cv2, frame: CameraFrame):
         cv2.putText(bgr, text, (8, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 3, cv2.LINE_AA)
         cv2.putText(bgr, text, (8, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 1, cv2.LINE_AA)
 
-    put(f"FPS: {float(frame.camera_fps):.1f}", 24)
+    put(f"FPS: {float(frame.camera_fps):.2f}", 24)
     put(f"Frame: {int(frame.frame_cnt)}", 48)
     put(f"Size: {w}x{h}", 72)
     put(f"Timestamp: {float(frame.t_monotonic):.3f}", 96, color=(255, 200, 0))
