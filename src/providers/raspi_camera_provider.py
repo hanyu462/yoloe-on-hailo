@@ -22,7 +22,7 @@ class RaspiCameraProvider:
     Raspberry Pi Camera Module provider.
 
     - Picamera2를 사용해 background thread에서 최신 프레임을 계속 읽는다.
-    - `get_data()`는 가장 최근 프레임 정보를 `CameraFrame`으로 반환한다.
+    - `data`는 가장 최근 프레임 정보를 `CameraFrame`으로 반환한다.
     - Picamera2 `RGB888` main stream은 OpenCV용 `[B, G, R]` 배열로 capture 된다.
     - `camera_fps`는 capture request metadata의 `FrameDuration`으로 계산한다.
     """
@@ -98,8 +98,9 @@ class RaspiCameraProvider:
     @property
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
-
-    def get_data(self) -> Optional[CameraFrame]:
+    
+    @property
+    def data(self) -> Optional[CameraFrame]:
         with self._lock:
             return self._data
 

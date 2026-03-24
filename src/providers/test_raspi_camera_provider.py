@@ -2,7 +2,7 @@
 RaspiCameraProvider - Hardware test script.
 
 Tested APIs:
-  start, stop, is_running, get_data
+  start, stop, is_running, data
 
 Prerequisites:
   Raspberry Pi Camera Module connected and Picamera2 installed
@@ -66,9 +66,9 @@ def main() -> int:
     # Phase 2: Frame verification
     # -------------------------------------------------------------------------
     print(f"\n{'=' * 60}\n  Phase 2: Frame verification\n{'=' * 60}")
-    first_frame = provider.get_data()
+    first_frame = provider.data
     if first_frame is None:
-        print("  FAIL: provider.get_data() returned None after successful start()")
+        print("  FAIL: provider.data returned None after successful start()")
         provider.stop()
         return 1
 
@@ -90,7 +90,7 @@ def main() -> int:
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
     while True:
-        frame = provider.get_data()
+        frame = provider.data
         if frame is None:
             time.sleep(0.01)
             continue
